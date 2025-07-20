@@ -31,7 +31,7 @@ fi
 export LC_ALL=C.UTF-8
 
 ARCH=$(uname -m)
-
+CUR_DIR=$(pwd)
 
 function munge_ceph_spec_in {
     local with_seastar=$1
@@ -338,15 +338,12 @@ function preload_wheels_for_tox() {
 	if [ $(uname -m) = "riscv64" ];then
         pip install "Cython<3.0" "pyyaml==6.0" --no-build-isolation
 	pwd
-	pip install ../../../../dist/maturin-1.9.1-py3-none-manylinux_2_34_riscv64.whl
-	pip install ../../../../dist/rpds_py-0.26.0-cp310-cp310-manylinux_2_34_riscv64.whl
-	pip install ../../../../dist/cryptography-45.0.5-cp310-abi3-linux_riscv64.whl 
+	pip install $CUR_DIR/dist/*.whl
 
         pip install jsonschema~=4.0
 
-        sed -i '/jsonschema~=4.0/d' requirements-lint.txt
-	sed -i '/jsonschema~=4.0/d' requirements-test.txt
-
+        sed -i '/jsonschema~=4.0/d' $CUR_DIR/src/pybind/mgr/dashboard/requirements-lint.txt
+	sed -i '/jsonschema~=4.0/d' $CUR_DIR/src/pybind/mgr/dashboard/requirements-test.txt
         fi
 
         populate_wheelhouse "wheel -w $wip_wheelhouse" $require $constraint || exit 1
@@ -438,12 +435,12 @@ else
 	  echo "current arch is riscv,need to prepare something"
           sed -i.bak '10a || (defined(__riscv)&& __riscv_xlen == 64 )   \\' src/arrow/cpp/src/arrow/vendored/fast_float/float_common.h
 	  pushd src/googletest
-	  git checkout 389cb68b
+	  git checkout 096014a45dc38dff993f5b7bb28a258d8323344b
 	  popd
 
 	  mkdir -p dist && unzip riscv_dep.zip -d dist
 	  sudo apt --fix-broken install ./dist/*.deb
-
+	  sudo apt install libopenblas-dev
 
 	fi
 
