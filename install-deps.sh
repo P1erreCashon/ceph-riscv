@@ -434,9 +434,6 @@ else
 	if [ $ARCH = "riscv64" ];then
 	  echo "current arch is riscv,need to prepare something"
           sed -i.bak '10a || (defined(__riscv)&& __riscv_xlen == 64 )   \\' src/arrow/cpp/src/arrow/vendored/fast_float/float_common.h
-	  pushd src/googletest
-	  git checkout 096014a45dc38dff993f5b7bb28a258d8323344b
-	  popd
 
 	  mkdir -p dist && unzip riscv_dep.zip -d dist
 	  sudo apt --fix-broken install ./dist/*.deb
