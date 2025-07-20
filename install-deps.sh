@@ -437,7 +437,7 @@ else
 
 	  mkdir -p dist && unzip riscv_dep.zip -d dist
 	  sudo apt --fix-broken install ./dist/*.deb
-	  sudo apt install libopenblas-dev
+	  sudo apt install libopenblas-dev libgoogle-perftools-dev libjemalloc-dev
 
 	fi
 
