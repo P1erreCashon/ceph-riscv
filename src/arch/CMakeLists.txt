@@ -7,6 +7,8 @@ elseif(HAVE_INTEL)
   list(APPEND arch_srcs intel.c)
 elseif(HAVE_PPC64LE OR HAVE_PPC64 OR HAVE_PPC)
   list(APPEND arch_srcs ppc.c)
+elseif(HAVE_RISCV)
+  list(APPEND arch_srcs riscv.c)
 endif()
 
 add_library(arch OBJECT ${arch_srcs})

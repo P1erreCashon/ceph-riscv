@@ -15,6 +15,9 @@ function(build_arrow)
   # share the version ceph is using
   list(APPEND arrow_CMAKE_ARGS -DARROW_JEMALLOC=OFF)
 
+
+  list(APPEND arrow_CMAKE_ARGS -DARROW_SIMD_LEVEL=NONE)
+
   # transitive dependencies
   list(APPEND arrow_INTERFACE_LINK_LIBRARIES thrift)
 

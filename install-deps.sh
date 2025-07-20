@@ -334,6 +334,21 @@ function preload_wheels_for_tox() {
         type python3 > /dev/null 2>&1 || continue
         activate_virtualenv $top_srcdir || exit 1
         python3 -m pip install --upgrade pip
+
+	if [ $(uname -m) = "riscv64" ];then
+        pip install "Cython<3.0" "pyyaml==6.0" --no-build-isolation
+	pwd
+	pip install ../../../../dist/maturin-1.9.1-py3-none-manylinux_2_34_riscv64.whl
+	pip install ../../../../dist/rpds_py-0.26.0-cp310-cp310-manylinux_2_34_riscv64.whl
+	pip install ../../../../dist/cryptography-45.0.5-cp310-abi3-linux_riscv64.whl 
+
+        pip install jsonschema~=4.0
+
+        sed -i '/jsonschema~=4.0/d' requirements-lint.txt
+	sed -i '/jsonschema~=4.0/d' requirements-test.txt
+
+        fi
+
         populate_wheelhouse "wheel -w $wip_wheelhouse" $require $constraint || exit 1
         mv $wip_wheelhouse wheelhouse
         md5sum $require_files $constraint_files > $md5
@@ -418,6 +433,20 @@ else
     source /etc/os-release
     case "$ID" in
     debian|ubuntu|devuan|elementary|softiron)
+
+	if [ $ARCH = "riscv64" ];then
+	  echo "current arch is riscv,need to prepare something"
+          sed -i.bak '10a || (defined(__riscv)&& __riscv_xlen == 64 )   \\' src/arrow/cpp/src/arrow/vendored/fast_float/float_common.h
+	  pushd src/googletest
+	  git checkout 389cb68b
+	  popd
+
+	  mkdir -p dist && unzip riscv_dep.zip -d dist
+	  sudo apt --fix-broken install ./dist/*.deb
+
+
+	fi
+
         echo "Using apt-get to install dependencies"
 	# Put this before any other invocation of apt so it can clean
 	# up in a broken case.
