@@ -339,7 +339,7 @@ function preload_wheels_for_tox() {
         pip install "Cython<3.0" "pyyaml==6.0" --no-build-isolation
 	pwd
 	pip install $CUR_DIR/dist/*.whl
-
+	pip install -U setuptools[core]
         pip install jsonschema~=4.0
 
         sed -i '/jsonschema~=4.0/d' $CUR_DIR/src/pybind/mgr/dashboard/requirements-lint.txt
