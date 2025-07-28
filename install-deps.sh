@@ -294,7 +294,7 @@ function populate_wheelhouse() {
     pip $PIP_OPTS $install \
       'setuptools >= 0.8' 'pip >= 21.0' 'wheel >= 0.24' 'tox >= 2.9.1' || return 1
     if test $# != 0 ; then
-        pip $PIP_OPTS $install $@ || return 1
+        pip $PIP_OPTS $install --no-build-isolation $@ || return 1
     fi
 }
 
@@ -332,18 +332,28 @@ function preload_wheels_for_tox() {
     fi
     if test "$require" && ! test -d wheelhouse ; then
         type python3 > /dev/null 2>&1 || continue
+        
+        wget -qO- https://astral.sh/uv/install.sh | sh
+        source $HOME/.local/bin/env
+
         activate_virtualenv $top_srcdir || exit 1
-        python3 -m pip install --upgrade pip
+        uv pip install --upgrade pip setuptools
+        
+        if [ $ARCH = "riscv64" ];then
 
-	if [ $(uname -m) = "riscv64" ];then
-        pip install "Cython<3.0" "pyyaml==6.0" --no-build-isolation
-	pwd
-	pip install $CUR_DIR/dist/*.whl
-	pip install -U setuptools[core]
-        pip install jsonschema~=4.0
+            echo "Since some packages don't support riscv64, we need to package them locally, so we need to install rust manually,"
 
-        sed -i '/jsonschema~=4.0/d' $CUR_DIR/src/pybind/mgr/dashboard/requirements-lint.txt
-	sed -i '/jsonschema~=4.0/d' $CUR_DIR/src/pybind/mgr/dashboard/requirements-test.txt
+            uv pip install --upgrade pip setuptools[core] setuptools
+            uv pip install "pyyaml" maturin meson-python pythran "pybind11>=2.13.2" cffi 
+            uv pip install --upgrade cython
+            
+            sed -i '/xmlsec/d' requirements-test.txt || continue # 删除
+            sed -i '/saml/d' requirements-extra.txt || continue # 删除
+            sed -i '/pyyaml/d' requirements-alerts.txt || continue # 删除
+            sed -i '/PyYAML/d'  requirements-lint.txt || continue # 删除
+             
+            uv pip install xmlsec==1.3.13 --no-cache-dir
+            uv pip install python3-saml
         fi
 
         populate_wheelhouse "wheel -w $wip_wheelhouse" $require $constraint || exit 1
@@ -431,15 +441,67 @@ else
     case "$ID" in
     debian|ubuntu|devuan|elementary|softiron)
 
-	if [ $ARCH = "riscv64" ];then
-	  echo "current arch is riscv,need to prepare something"
-          sed -i.bak '10a || (defined(__riscv)&& __riscv_xlen == 64 )   \\' src/arrow/cpp/src/arrow/vendored/fast_float/float_common.h
+        if [ $ARCH = "riscv64" ];then
+            echo "current arch is riscv,need to prepare something"
+            apt-get update
+            apt-get install sudo libopenblas-dev libgoogle-perftools-dev libjemalloc-dev zip libicu-dev python3 python3-pip -y
+            if [ -e libicu70_70.1-2_riscv64.deb ]; then
+                echo "libicu70_70.1-2_riscv64.deb already exists, skipping download"
+            else
+                echo "Downloading libicu70_70.1-2_riscv64.deb"
+                wget http://launchpadlibrarian.net/585117633/libicu70_70.1-2_riscv64.deb
+            fi
+            sudo dpkg -i libicu70_70.1-2_riscv64.deb
 
-	  mkdir -p dist && unzip riscv_dep.zip -d dist
-	  sudo apt --fix-broken install ./dist/*.deb
-	  sudo apt install libopenblas-dev libgoogle-perftools-dev libjemalloc-dev
 
-	fi
+            if [ -e dist ]; then
+                echo "dist directory already exists, skipping"
+            else
+                # insatll some dependencies
+                mkdir -p dist
+                if [ -e ceph-boost-deb.zip ]; then
+                    echo "ceph-boost-deb.zip already exists, skipping download"
+                else
+                    echo "Downloading ceph-boost-deb.zip and valgrind-deb.zip"
+                    wget https://github.com/ffgan/ceph-boost-riscv/releases/download/ubuntu24.04/ceph-boost-deb.zip
+                fi
+
+                if [ -e valgrind-deb.zip ]; then
+                    echo "valgrind-deb.zip already exists, skipping download"
+                else
+                    echo "Downloading valgrind-deb.zip"
+                    wget https://github.com/ffgan/valgrind-riscv-deb/releases/download/0.0.1/valgrind-deb.zip
+                fi
+
+                unzip ceph-boost-deb.zip -d dist
+                unzip valgrind-deb.zip -d dist
+
+                # src/arrow need to modify to allow riscv64 build
+                cp src/arch/patch/arrow_riscv64_support.patch src/arrow/arrow_riscv64_support.patch
+                pushd src/arrow
+                git apply arrow_riscv64_support.patch
+                popd
+            fi
+            apt --fix-broken install -y ./dist/ceph-libboost-atomic${boost_ver}-dev*.deb \
+                                        ./dist/ceph-libboost-chrono${boost_ver}-dev*.deb \
+                                        ./dist/ceph-libboost-context${boost_ver}-dev*.deb \
+                                        ./dist/ceph-libboost-coroutine${boost_ver}-dev*.deb \
+                                        ./dist/ceph-libboost-date-time${boost_ver}-dev*.deb \
+                                        ./dist/ceph-libboost-filesystem${boost_ver}-dev*.deb \
+                                        ./dist/ceph-libboost-iostreams${boost_ver}-dev*.deb \
+                                        ./dist/ceph-libboost-program-options${boost_ver}-dev*.deb \
+                                        ./dist/ceph-libboost-python${boost_ver}-dev*.deb \
+                                        ./dist/ceph-libboost-random${boost_ver}-dev*.deb \
+                                        ./dist/ceph-libboost-regex${boost_ver}-dev*.deb \
+                                        ./dist/ceph-libboost-system${boost_ver}-dev*.deb \
+                                        ./dist/ceph-libboost-test${boost_ver}-dev*.deb \
+                                        ./dist/ceph-libboost-thread${boost_ver}-dev*.deb \
+                                        ./dist/ceph-libboost-timer${boost_ver}-dev*.deb \
+                                        ./dist/valgrind_*.deb
+
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+            . "$HOME/.cargo/env"
+        fi
 
         echo "Using apt-get to install dependencies"
 	# Put this before any other invocation of apt so it can clean
