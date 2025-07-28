@@ -16,7 +16,7 @@ function(build_arrow)
   list(APPEND arrow_CMAKE_ARGS -DARROW_JEMALLOC=OFF)
 
 
-  if (CMAKE_SYSTEM_PROCESSOR STREQUAL "riscv64")
+  if (CMAKE_SYSTEM_PROCESSOR MATCHES "riscv64|RISCV64")
     list(APPEND arrow_CMAKE_ARGS -DARROW_SIMD_LEVEL=NONE)
   endif()
 
