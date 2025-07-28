@@ -16,7 +16,9 @@ function(build_arrow)
   list(APPEND arrow_CMAKE_ARGS -DARROW_JEMALLOC=OFF)
 
 
-  list(APPEND arrow_CMAKE_ARGS -DARROW_SIMD_LEVEL=NONE)
+  if (CMAKE_SYSTEM_PROCESSOR STREQUAL "riscv64")
+    list(APPEND arrow_CMAKE_ARGS -DARROW_SIMD_LEVEL=NONE)
+  endif()
 
   # transitive dependencies
   list(APPEND arrow_INTERFACE_LINK_LIBRARIES thrift)
