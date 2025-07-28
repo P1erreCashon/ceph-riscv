@@ -12,6 +12,7 @@
 #  version 2.1 of the License, or (at your option) any later version.
 #
 set -e
+set -x
 
 if ! [ "${_SOURCED_LIB_BUILD}" = 1 ]; then
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -292,9 +293,9 @@ function populate_wheelhouse() {
     # of pip matters when it comes to using wheel packages
     PIP_OPTS="--timeout 300 --exists-action i"
     pip $PIP_OPTS $install \
-      'setuptools >= 0.8' 'pip >= 21.0' 'wheel >= 0.24' 'tox >= 2.9.1' || return 1
+      'setuptools >= 80.9.0' 'pip >= 25.1.1' 'wheel >= 0.45.1' 'tox >= 4.28.3' || return 1
     if test $# != 0 ; then
-        pip $PIP_OPTS $install --no-build-isolation $@ || return 1
+        pip $PIP_OPTS $install $@ || return 1
     fi
 }
 
@@ -312,6 +313,7 @@ function activate_virtualenv() {
         fi
     fi
     . $env_dir/bin/activate
+    whereis pip
 }
 
 function preload_wheels_for_tox() {
@@ -332,28 +334,17 @@ function preload_wheels_for_tox() {
     fi
     if test "$require" && ! test -d wheelhouse ; then
         type python3 > /dev/null 2>&1 || continue
-        
-        wget -qO- https://astral.sh/uv/install.sh | sh
-        source $HOME/.local/bin/env
-
         activate_virtualenv $top_srcdir || exit 1
-        uv pip install --upgrade pip setuptools
-        
         if [ $ARCH = "riscv64" ];then
 
             echo "Since some packages don't support riscv64, we need to package them locally, so we need to install rust manually,"
-
-            uv pip install --upgrade pip setuptools[core] setuptools
-            uv pip install "pyyaml" maturin meson-python pythran "pybind11>=2.13.2" cffi 
-            uv pip install --upgrade cython
-            
-            sed -i '/xmlsec/d' requirements-test.txt || continue # 删除
-            sed -i '/saml/d' requirements-extra.txt || continue # 删除
-            sed -i '/pyyaml/d' requirements-alerts.txt || continue # 删除
-            sed -i '/PyYAML/d'  requirements-lint.txt || continue # 删除
-             
-            uv pip install xmlsec==1.3.13 --no-cache-dir
-            uv pip install python3-saml
+            . "$HOME/.cargo/env"
+            rustup set default-host riscv64gc-unknown-linux-gnu
+            pip install -U pip setuptools setuptools_rust
+            populate_wheelhouse "wheel -w $wip_wheelhouse"  "pyyaml" maturin meson-python pythran "pybind11>=2.13.2" cffi 
+            populate_wheelhouse "wheel -w $wip_wheelhouse"   cython
+            pwd
+            populate_wheelhouse "wheel -w $wip_wheelhouse"  xmlsec==1.3.13 python3-saml --no-cache-dir
         fi
 
         populate_wheelhouse "wheel -w $wip_wheelhouse" $require $constraint || exit 1
