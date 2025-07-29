@@ -435,7 +435,7 @@ else
         if [ $ARCH = "riscv64" ];then
             echo "current arch is riscv,need to prepare something"
             apt-get update
-            apt-get install sudo libopenblas-dev libgoogle-perftools-dev libjemalloc-dev zip libicu-dev python3 python3-pip build-essential doxygen -y
+            apt-get install sudo libopenblas-dev libgoogle-perftools-dev libjemalloc-dev zip libicu-dev python3 python3-pip build-essential doxygen  -y
             if [ -e libicu70_70.1-2_riscv64.deb ]; then
                 echo "libicu70_70.1-2_riscv64.deb already exists, skipping download"
             else
@@ -454,7 +454,7 @@ else
                     echo "ceph-boost-deb.zip already exists, skipping download"
                 else
                     echo "Downloading ceph-boost-deb.zip and valgrind-deb.zip"
-                    wget https://github.com/ffgan/ceph-boost-riscv/releases/download/ubuntu24.04/ceph-boost-deb.zip
+                    wget https://github.com/ffgan/ceph-boost-riscv/releases/download/0.0.1/ceph-boost-deb.zip
                 fi
 
                 if [ -e valgrind-deb.zip ]; then
@@ -472,24 +472,42 @@ else
             # src/arrow need to modify to allow riscv64 build
             cp src/arch/patch/arrow_riscv64_support.patch src/arrow/arrow_riscv64_support.patch
             pushd src/arrow
+            git checkout .
             git apply arrow_riscv64_support.patch
             popd
 
-            apt --fix-broken install -y ./dist/ceph-libboost-atomic${boost_ver}-dev*.deb \
-                                        ./dist/ceph-libboost-chrono${boost_ver}-dev*.deb \
-                                        ./dist/ceph-libboost-context${boost_ver}-dev*.deb \
-                                        ./dist/ceph-libboost-coroutine${boost_ver}-dev*.deb \
-                                        ./dist/ceph-libboost-date-time${boost_ver}-dev*.deb \
-                                        ./dist/ceph-libboost-filesystem${boost_ver}-dev*.deb \
-                                        ./dist/ceph-libboost-iostreams${boost_ver}-dev*.deb \
-                                        ./dist/ceph-libboost-program-options${boost_ver}-dev*.deb \
-                                        ./dist/ceph-libboost-python${boost_ver}-dev*.deb \
-                                        ./dist/ceph-libboost-random${boost_ver}-dev*.deb \
-                                        ./dist/ceph-libboost-regex${boost_ver}-dev*.deb \
-                                        ./dist/ceph-libboost-system${boost_ver}-dev*.deb \
-                                        ./dist/ceph-libboost-test${boost_ver}-dev*.deb \
-                                        ./dist/ceph-libboost-thread${boost_ver}-dev*.deb \
-                                        ./dist/ceph-libboost-timer${boost_ver}-dev*.deb \
+            apt --fix-broken install -y ./dist/ceph-libboost-atomic${boost_ver}*.deb \
+                                        ./dist/ceph-libboost-chrono${boost_ver}*.deb \
+                                        ./dist/ceph-libboost-context${boost_ver}*.deb \
+                                        ./dist/ceph-libboost-coroutine${boost_ver}*.deb \
+                                        ./dist/ceph-libboost-date-time${boost_ver}*.deb \
+                                        ./dist/ceph-libboost-serialization${boost_ver}*.deb \
+                                        ./dist/ceph-libboost-filesystem${boost_ver}*.deb \
+                                        ./dist/ceph-libboost-iostreams${boost_ver}*.deb \
+                                        ./dist/ceph-libboost-program-options${boost_ver}*.deb \
+                                        ./dist/ceph-libboost-python${boost_ver}*.deb \
+                                        ./dist/ceph-libboost-random${boost_ver}*.deb \
+                                        ./dist/ceph-libboost-regex${boost_ver}*.deb \
+                                        ./dist/ceph-libboost-system${boost_ver}*.deb \
+                                        ./dist/ceph-libboost-test${boost_ver}*.deb \
+                                        ./dist/ceph-libboost-thread${boost_ver}*.deb \
+                                        ./dist/ceph-libboost-timer${boost_ver}*.deb \
+                                        ./dist/ceph-libboost${boost_ver}*.deb \
+                                        ./dist/ceph-libboost-container${boost_ver}*.deb \
+                                        ./dist/ceph-libboost-exception${boost_ver}*.deb \
+                                        ./dist/ceph-libboost-fiber${boost_ver}*.deb \
+                                        ./dist/ceph-libboost-graph${boost_ver}*.deb \
+                                        ./dist/ceph-libboost-graph-parallel${boost_ver}*.deb \
+                                        ./dist/ceph-libboost-locale${boost_ver}*.deb \
+                                        ./dist/ceph-libboost-log${boost_ver}*.deb \
+                                        ./dist/ceph-libboost-math${boost_ver}*.deb \
+                                        ./dist/ceph-libboost-mpi${boost_ver}*.deb \
+                                        ./dist/ceph-libboost-mpi-python${boost_ver}*.deb \
+                                        ./dist/ceph-libboost-numpy${boost_ver}*.deb \
+                                        ./dist/ceph-libboost-stacktrace${boost_ver}*.deb \
+                                        ./dist/ceph-libboost-type-erasure${boost_ver}*.deb \
+                                        ./dist/ceph-libboost-wave${boost_ver}*.deb \
+                                        ./dist/ceph-libboost-nowide${boost_ver}*.deb \
                                         ./dist/valgrind_*.deb
 
             curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y

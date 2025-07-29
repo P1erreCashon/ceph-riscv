@@ -391,9 +391,9 @@ private:
   public:                                                                      \
     GTEST_TEST_CLASS_NAME_(test_suite_name, test_name)() = default;            \
     ~GTEST_TEST_CLASS_NAME_(test_suite_name, test_name)() override = default;  \
-    GTEST_DISALLOW_COPY_AND_ASSIGN_(GTEST_TEST_CLASS_NAME_(test_suite_name,    \
+    void GTEST_DISALLOW_COPY_AND_ASSIGN_(GTEST_TEST_CLASS_NAME_(test_suite_name,    \
 							   test_name));        \
-    GTEST_DISALLOW_MOVE_AND_ASSIGN_(GTEST_TEST_CLASS_NAME_(test_suite_name,    \
+    void GTEST_DISALLOW_MOVE_AND_ASSIGN_(GTEST_TEST_CLASS_NAME_(test_suite_name,    \
 							   test_name));        \
 									       \
   private:                                                                     \
