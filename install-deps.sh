@@ -435,7 +435,7 @@ else
         if [ $ARCH = "riscv64" ];then
             echo "current arch is riscv,need to prepare something"
             apt-get update
-            apt-get install sudo libopenblas-dev libgoogle-perftools-dev libjemalloc-dev zip libicu-dev python3 python3-pip -y
+            apt-get install sudo libopenblas-dev libgoogle-perftools-dev libjemalloc-dev zip libicu-dev python3 python3-pip build-essential doxygen -y
             if [ -e libicu70_70.1-2_riscv64.deb ]; then
                 echo "libicu70_70.1-2_riscv64.deb already exists, skipping download"
             else
@@ -467,12 +467,14 @@ else
                 unzip ceph-boost-deb.zip -d dist
                 unzip valgrind-deb.zip -d dist
 
-                # src/arrow need to modify to allow riscv64 build
-                cp src/arch/patch/arrow_riscv64_support.patch src/arrow/arrow_riscv64_support.patch
-                pushd src/arrow
-                git apply arrow_riscv64_support.patch
-                popd
             fi
+            
+            # src/arrow need to modify to allow riscv64 build
+            cp src/arch/patch/arrow_riscv64_support.patch src/arrow/arrow_riscv64_support.patch
+            pushd src/arrow
+            git apply arrow_riscv64_support.patch
+            popd
+
             apt --fix-broken install -y ./dist/ceph-libboost-atomic${boost_ver}-dev*.deb \
                                         ./dist/ceph-libboost-chrono${boost_ver}-dev*.deb \
                                         ./dist/ceph-libboost-context${boost_ver}-dev*.deb \
