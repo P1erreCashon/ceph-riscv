@@ -434,7 +434,7 @@ else
         if [ $ARCH = "riscv64" ];then
             echo "current arch is riscv,need to prepare something"
             apt-get update
-            apt-get install sudo libopenblas-dev libgoogle-perftools-dev libjemalloc-dev zip libicu-dev python3 python3-pip build-essential doxygen  -y
+            apt-get install sudo libopenblas-dev libgoogle-perftools-dev libjemalloc-dev zip libicu-dev python3 python3-pip build-essential doxygen xmlstarlet jq  -y
             if [ -e libicu70_70.1-2_riscv64.deb ]; then
                 echo "libicu70_70.1-2_riscv64.deb already exists, skipping download"
             else
