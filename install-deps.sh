@@ -609,6 +609,8 @@ else
 
             curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
             . "$HOME/.cargo/env"
+            sudo dnf install libxml2-devel xmlsec1-devel xmlsec1-openssl-devel libtool-ltdl-devel rdma-core-devel cryptsetup-devel liboath-devel lttng-ust-devel thrift  thrift-devel lua-devel gperf lmdb-devel librabbitmq-devel  librdkafka-devel re2-devel  python3-prettytable -y
+            pip install Cython
         fi
         builddepcmd="dnf -y builddep --allowerasing"
         echo "Using dnf to install dependencies"
