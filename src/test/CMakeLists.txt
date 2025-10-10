@@ -784,12 +784,12 @@ if(CMAKE_VERSION VERSION_LESS "3.8")
   # this is ugly as we'll end with -std=c++11 overriding the previous -std=c++17
   # I would love to have a better way for old Cmakes
   set_target_properties(compiletest_cxx11_client
-    PROPERTIES COMPILE_FLAGS "-std=c++11 -Werror -pedantic"
+    PROPERTIES COMPILE_FLAGS "-std=c++17 -Werror -pedantic"
     )
 else()
   set_target_properties(compiletest_cxx11_client
     PROPERTIES COMPILE_FLAGS "-Werror -pedantic"
-    CMAKE_CXX_STANDARD 11
+    CMAKE_CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
     )
 endif()

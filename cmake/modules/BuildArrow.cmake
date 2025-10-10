@@ -3,6 +3,10 @@
 function(build_arrow)
   # only enable the parquet component
   set(arrow_CMAKE_ARGS -DARROW_PARQUET=ON)
+  # fix abseil require >c++14
+  list(APPEND arrow_CMAKE_ARGS -DCMAKE_CXX_STANDARD=17)
+  list(APPEND arrow_CMAKE_ARGS -DCMAKE_CXX_STANDARD_REQUIRED=ON)
+  list(APPEND arrow_CMAKE_ARGS -DCMAKE_CXX_EXTENSIONS=OFF)
 
   # only use preinstalled dependencies for arrow, don't fetch/build any
   list(APPEND arrow_CMAKE_ARGS -DARROW_DEPENDENCY_SOURCE=SYSTEM)

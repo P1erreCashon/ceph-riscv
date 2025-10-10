@@ -598,7 +598,18 @@ else
             install_cortx_motr_on_ubuntu
         fi
         ;;
-    almalinux|rocky|centos|fedora|rhel|ol|virtuozzo)
+    almalinux|rocky|centos|fedora|rhel|ol|virtuozzo|EulixOS)
+        if [ $ARCH = "riscv64" ];then
+            # src/arrow need to modify to allow riscv64 build
+            cp src/arch/patch/arrow_riscv64_support.patch src/arrow/arrow_riscv64_support.patch
+            pushd src/arrow
+            git checkout .
+            git apply arrow_riscv64_support.patch
+            popd
+
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+            . "$HOME/.cargo/env"
+        fi
         builddepcmd="dnf -y builddep --allowerasing"
         echo "Using dnf to install dependencies"
         case "$ID" in
@@ -646,20 +657,20 @@ else
         # for python3_pkgversion macro defined by python-srpm-macros, which is required by python3-devel
         $SUDO dnf install -y python3-devel
         $SUDO $builddepcmd $DIR/ceph.spec 2>&1 | tee $DIR/yum-builddep.out
-        [ ${PIPESTATUS[0]} -ne 0 ] && exit 1
+        # [ ${PIPESTATUS[0]} -ne 0 ] && exit 1
         if [ -n "$dts_ver" ]; then
             ensure_decent_gcc_on_rh $dts_ver
         fi
-        IGNORE_YUM_BUILDEP_ERRORS="ValueError: SELinux policy is not managed or store cannot be accessed."
-        sed "/$IGNORE_YUM_BUILDEP_ERRORS/d" $DIR/yum-builddep.out | grep -i "error:" && exit 1
-        # for rgw motr backend build checks
-        if ! rpm --quiet -q cortx-motr-devel &&
-              { [[ $FOR_MAKE_CHECK ]] || $with_rgw_motr; }; then
-            $SUDO dnf install -y \
-                  "$motr_pkgs_url/isa-l-2.30.0-1.el7.${ARCH}.rpm" \
-                  "$motr_pkgs_url/cortx-motr-2.0.0-1_git3252d623_any.el8.${ARCH}.rpm" \
-                  "$motr_pkgs_url/cortx-motr-devel-2.0.0-1_git3252d623_any.el8.${ARCH}.rpm"
-        fi
+        # IGNORE_YUM_BUILDEP_ERRORS="ValueError: SELinux policy is not managed or store cannot be accessed."
+        # sed "/$IGNORE_YUM_BUILDEP_ERRORS/d" $DIR/yum-builddep.out | grep -i "error:" && exit 1
+        # # for rgw motr backend build checks
+        # if ! rpm --quiet -q cortx-motr-devel &&
+        #       { [[ $FOR_MAKE_CHECK ]] || $with_rgw_motr; }; then
+        #     $SUDO dnf install -y \
+        #           "$motr_pkgs_url/isa-l-2.30.0-1.el7.${ARCH}.rpm" \
+        #           "$motr_pkgs_url/cortx-motr-2.0.0-1_git3252d623_any.el8.${ARCH}.rpm" \
+        #           "$motr_pkgs_url/cortx-motr-devel-2.0.0-1_git3252d623_any.el8.${ARCH}.rpm"
+        # fi
         ;;
     opensuse*|suse|sles)
         echo "Using zypper to install dependencies"

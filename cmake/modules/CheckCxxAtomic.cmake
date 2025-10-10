@@ -6,7 +6,7 @@ include(CMakePushCheckState)
 
 
 function(check_cxx_atomics var)
-  set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -std=c++11")
+  set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -std=c++17")
     check_cxx_source_compiles("
 #include <atomic>
 #include <cstdint>
