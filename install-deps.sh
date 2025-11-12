@@ -344,7 +344,7 @@ function preload_wheels_for_tox() {
             populate_wheelhouse "wheel -w $wip_wheelhouse"  "pyyaml" maturin meson-python pythran "pybind11>=2.13.2" cffi 
             populate_wheelhouse "wheel -w $wip_wheelhouse"   cython
             pwd
-            populate_wheelhouse "wheel -w $wip_wheelhouse"  xmlsec==1.3.13 python3-saml --no-cache-dir
+            populate_wheelhouse "wheel -w $wip_wheelhouse"  xmlsec==1.3.17 python3-saml --no-cache-dir
         fi
 
         populate_wheelhouse "wheel -w $wip_wheelhouse" $require $constraint || exit 1
