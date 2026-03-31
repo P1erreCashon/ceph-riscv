@@ -54,4 +54,12 @@ setconf CONFIG_RTE_TEST_PMD n
 setconf CONFIG_RTE_MBUF_REFCNT_ATOMIC n
 
 # balanced allocation of hugepages
-setconf CONFIG_RTE_EAL_NUMA_AWARE_HUGEPAGES "${numa}"
+setconf CONFIG_RTE_EAL_NUMA_AWARE_HUGEPAGES n
+
+# ----------------- RISC-V 专属配置 -----------------
+if [[ "$sysproc" =~ riscv ]]; then
+    # 禁用 compress/isal driver
+    setconf CONFIG_RTE_LIBRTE_PMD_ISAL n
+    # 最大 NUMA 节点数为 1
+    setconf CONFIG_RTE_MAX_NUMA_NODES 1
+fi

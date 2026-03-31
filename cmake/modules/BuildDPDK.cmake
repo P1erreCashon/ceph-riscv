@@ -31,6 +31,11 @@ function(do_build_dpdk dpdk_dir)
     set(arch "ppc_64")
     set(machine "power8")
     set(machine_tmpl "power8")
+  elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "riscv64|RISCV64")
+    set(arch "riscv")
+    set(machine "rv64gc")
+    set(machine_tmpl "native")
+    set(rte_cflags "-march=rv64gc")
   else()
     message(FATAL_ERROR "not able to build DPDK support: "
       "unknown arch \"${CMAKE_SYSTEM_PROCESSOR}\"")
@@ -106,8 +111,10 @@ function(do_build_dpdk dpdk_dir)
   else()
     set(numa "n")
   endif()
+  # ---- 改写 patch-config 步骤 ----
+  # 将 CMAKE_SYSTEM_PROCESSOR 传给脚本，让 RISC-V 自动配置
   ExternalProject_Add_Step(dpdk-ext patch-config
-    COMMAND ${CMAKE_MODULE_PATH}/patch-dpdk-conf.sh ${dpdk_dir} ${machine} ${arch} ${numa}
+    COMMAND ${CMAKE_MODULE_PATH}/patch-dpdk-conf.sh ${dpdk_dir} ${machine} ${arch} ${numa} ${CMAKE_SYSTEM_PROCESSOR}
     DEPENDEES configure
     DEPENDERS build)
   # easier to adjust the config

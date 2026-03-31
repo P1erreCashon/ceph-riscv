@@ -11,7 +11,6 @@ macro(build_spdk)
   endif()
   include(FindMake)
   find_make("MAKE_EXECUTABLE" "make_cmd")
-
   set(spdk_CFLAGS "-fPIC")
   include(CheckCCompilerFlag)
   check_c_compiler_flag("-Wno-address-of-packed-member" HAVE_WARNING_ADDRESS_OF_PACKED_MEMBER)
@@ -23,16 +22,16 @@ macro(build_spdk)
   if(HAVE_UNUSED_BUT_SET_VARIABLE)
     string(APPEND spdk_CFLAGS " -Wno-unused-but-set-variable")
   endif()
-
   include(ExternalProject)
   if(CMAKE_SYSTEM_PROCESSOR MATCHES "amd64|x86_64|AMD64")
     # a safer option than relying on the build host's arch
     set(target_arch core2)
+  elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "riscv64|RISCV64")
+    set(target_arch rv64gc)
   else()
     # default arch used by SPDK
     set(target_arch native)
   endif()
-
   set(source_dir "${CMAKE_SOURCE_DIR}/src/spdk")
   foreach(c lvol env_dpdk sock nvmf bdev nvme conf thread trace notify accel event_accel blob vmd event_vmd event_bdev sock_posix event_sock event rpc jsonrpc json util log)
     add_library(spdk::${c} STATIC IMPORTED)
@@ -43,7 +42,6 @@ macro(build_spdk)
     list(APPEND spdk_libs "${lib_path}")
     list(APPEND SPDK_LIBRARIES spdk::${c})
   endforeach()
-
   ExternalProject_Add(spdk-ext
     DEPENDS dpdk-ext
     SOURCE_DIR ${source_dir}
@@ -67,7 +65,6 @@ macro(build_spdk)
   foreach(spdk_lib ${SPDK_LIBRARIES})
     add_dependencies(${spdk_lib} spdk-ext)
   endforeach()
-
   set(SPDK_INCLUDE_DIR "${source_dir}/include")
   add_library(spdk::spdk INTERFACE IMPORTED)
   add_dependencies(spdk::spdk
